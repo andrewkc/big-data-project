@@ -22,6 +22,7 @@ El tamaño es considerable, abarcando múltiples competiciones y temporadas, lo 
 - Procesamiento de grandes volúmenes de datos en tiempo real.
 - Integración de Kafka, Dask y bases de datos NoSQL.
 - Implementación en AWS utilizando buckets y microservicios.
+- Generación de visualizaciones en tiempo real con Streamlit.
 
 ---
 
@@ -30,7 +31,7 @@ El tamaño es considerable, abarcando múltiples competiciones y temporadas, lo 
 - **Procesamiento**: Dask ⚡
 - **Almacenamiento**: DynamoDB 🍃
 - **Orquestación**: Apache Airflow ☁️
-- **Visualización**: Node.js 📊
+- **Visualización**: Streamlit 📊
 - **Infraestructura**: AWS ☁️
 
 ---
@@ -66,18 +67,19 @@ docker run -p 9092:9092 --name kafka --network kafka-net -e KAFKA_ZOOKEEPER_CONN
 ```
 
 ---
-
 ## 🗂️ Arquitectura del Proyecto
 
 ![Arquitectura del Proyecto](diagrama.jpeg)
 
 ## 🔍 Descripción de la Arquitectura
+La arquitectura implementada en este proyecto sigue un flujo bien definido, donde los datos se extraen de la API de StatsBomb, se ingieren mediante Kafka, y luego se procesan en paralelo utilizando Dask. Los resultados procesados se almacenan en DynamoDB para su posterior análisis. Finalmente, la visualización de los datos se maneja a través de **Streamlit**, lo que permite construir un dashboard interactivo en tiempo real.
+
 - **📡 Fuente de Datos**: API de StatsBomb 🌐
 - **📥 Ingesta**: Kafka 📦
 - **⚙️ Procesamiento**: Dask ⚡
 - **💾 Almacenamiento**: DynamoDB 🍃
 - **📋 Orquestación**: Apache Airflow ☁️
-- **📊 Visualización**: Node.js 📈
+- **📊 Visualización**: Streamlit 📈
 
 ---
 
@@ -89,14 +91,13 @@ docker run -p 9092:9092 --name kafka --network kafka-net -e KAFKA_ZOOKEEPER_CONN
 ---
 
 ## 📈 Resultados Obtenidos y Análisis de Estos
-*(Falta completar con resultados del análisis realizado.)*
+
 
 ---
 
 ## ⚠️ Dificultades Identificadas al Momento de Implementar la Solución
-*(Falta completar con los desafíos específicos enfrentados en AWS, Kafka o Dask.)*
+
 
 ---
 
 ## 📝 Conclusiones y Posibles Mejoras
-*(Falta completar con reflexiones finales y sugerencias de optimización o ampliación con LLMs.)*
