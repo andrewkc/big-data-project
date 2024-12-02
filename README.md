@@ -78,7 +78,6 @@ La arquitectura implementada en este proyecto sigue un flujo bien definido, dond
 - **📥 Ingesta**: Kafka 📦
 - **⚙️ Procesamiento**: Dask ⚡
 - **💾 Almacenamiento**: DynamoDB 🍃
-- **📋 Orquestación**: Apache Airflow ☁️
 - **📊 Visualización**: Streamlit 📈
 
 ---
