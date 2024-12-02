@@ -1,5 +1,18 @@
+from statsbombpy import sb
+import pandas as pd
+from mplsoccer import Pitch
+from mplsoccer import VerticalPitch,Pitch
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.pyplot as plt
+import matplotlib.patheffects as path_effects
+import seaborn as sns
+
 from confluent_kafka import Producer
 import json
+
+
+# Obtener los partidos de Euro 2024
+matches = sb.matches(competition_id=55, season_id=282)
 
 # Configuración del productor
 conf = {
@@ -16,23 +29,22 @@ def delivery_report(err, msg):
     else:
         print(f"Mensaje enviado a {msg.topic()} [{msg.partition()}]")
 
-# Datos para enviar
-data = {
-    'event_id': 1,
-    'event_type': 'Pass',
-    'player': 'Lionel Messi',
-    'location': [50, 30],
-    'pass_end_location': [70, 40]
-}
+# Convertir los datos de los partidos a un formato adecuado para enviar
+for match in matches.to_dict(orient='records'):
+    # Enviar el mensaje al tópico 'statsbomb_topic'
+    try:
+        producer.produce(
+            topic='statsbomb_topic', 
+            value=json.dumps(match),  # Serializar cada partido a JSON
+            callback=delivery_report
+        )
+        # Forzar el envío del mensaje
+        producer.flush()
+    except Exception as e:
+        print(f"Error al producir mensaje: {e}")
 
-# Enviar mensaje al tópico
-try:
-    producer.produce(
-        topic='my-topic',
-        value=json.dumps(data),
-        callback=delivery_report
-    )
-    # Forzar envío del mensaje
-    producer.flush()
-except Exception as e:
-    print(f"Error al producir mensajes: {e}")
+
+print("Datos de los partidos enviados a Kafka")
+
+
+
