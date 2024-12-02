@@ -30,7 +30,6 @@ El tamaño es considerable, abarcando múltiples competiciones y temporadas, lo 
 - **Ingesta**: Kafka 🪄
 - **Procesamiento**: Dask ⚡
 - **Almacenamiento**: DynamoDB 🍃
-- **Orquestación**: Apache Airflow ☁️
 - **Visualización**: Streamlit 📊
 - **Infraestructura**: AWS ☁️
 
