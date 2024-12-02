@@ -1,0 +1,1 @@
+CREATE CONSTRAINT ON (c:Competition) ASSERT c.id IS UNIQUE;

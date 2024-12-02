@@ -4,70 +4,51 @@ endif
 include .env
 export $(shell sed 's/=.*//' .env)
 
-# correr make <comando>
-.PHONY: up down logs clean setup-venv install-requirements run-spark run-kafka create-network start-zookeeper start-kafka stop-zookeeper stop-kafka
+.PHONY: all build deploy clean start-minikube stop-minikube dashboard
 
-up:
-	@echo "Levantando servicios de Kafka y Spark..."
-	docker-compose -f kafka/docker-compose.yml up -d
-	docker-compose -f spark/docker-compose.yml up -d
+# Construir Imágenes Docker
+build:
+	@echo "Construyendo imágenes Docker..."
+	docker build -t $(DOCKER_REGISTRY)/airflow:latest $(AIRFLOW_DIR)
+	docker build -t $(DOCKER_REGISTRY)/streamlit:latest $(STREAMLIT_DIR)
+	@echo "Imágenes Docker construidas."
 
-down:
-	@echo "Deteniendo servicios de Kafka y Spark..."
-	docker-compose -f kafka/docker-compose.yml down
-	docker-compose -f spark/docker-compose.yml down
+# Iniciar Minikube
+start-minikube:
+	@echo "Iniciando Minikube..."
+	minikube start --profile=$(MINIKUBE_PROFILE)
+	@echo "Minikube iniciado con el perfil $(MINIKUBE_PROFILE)."
 
-logs:
-	@echo "Mostrando logs de Kafka y Spark..."
-	docker-compose -f kafka/docker-compose.yml logs
-	docker-compose -f spark/docker-compose.yml logs
+# Desplegar Servicios en Kubernetes
+deploy: build
+	@echo "Creando namespace y aplicando configuraciones generales..."
+	kubectl apply -f $(K8S_DIR)/namespace.yaml
+	@echo "Desplegando Kafka..."
+	kubectl apply -f $(KAFKA_DIR)/kafka-deployment.yaml
+	kubectl apply -f $(KAFKA_DIR)/kafka-service.yaml
+	@echo "Desplegando Streamlit..."
+	kubectl apply -f $(STREAMLIT_DIR)/streamlit-deployment.yaml
+	kubectl apply -f $(STREAMLIT_DIR)/streamlit-service.yaml
+	@echo "Desplegando MongoDB..."
+	kubectl apply -f $(MONGODB_DIR)/mongodb-deployment.yaml
+	kubectl apply -f $(MONGODB_DIR)/mongodb-service.yaml
+	@echo "Aplicando Ingress..."
+	kubectl apply -f $(K8S_DIR)/ingress.yaml
+	@echo "Despliegue completado."
 
-setup-venv:
-	@echo "Configurando entorno virtual en $(VENV_DIR)..."
-	$(PYTHON) -m venv $(VENV_DIR)
-	@echo "Instalando dependencias..."
-	$(VENV_DIR)/bin/pip install --upgrade pip
-	$(VENV_DIR)/bin/pip install -r $(REQUIREMENTS_FILE)
+# Detener Minikube
+stop-minikube:
+	@echo "Deteniendo Minikube..."
+	minikube stop --profile=$(MINIKUBE_PROFILE)
+	@echo "Minikube detenido."
 
-install-requirements: setup-venv
-	@echo "Dependencias instaladas en el entorno virtual."
-
-run-spark:
-	@echo "Ejecutando Spark..."
-	$(VENV_DIR)/bin/python spark/src/main.py
-
-run-kafka:
-	@echo "Ejecutando Kafka..."
-	$(VENV_DIR)/bin/python kafka/src/main.py
-
+# Limpiar Recursos
 clean:
-	@echo "Limpiando servicios y entorno..."
-	docker-compose -f kafka/docker-compose.yml down --volumes --remove-orphans
-	docker-compose -f spark/docker-compose.yml down --volumes --remove-orphans
-	rm -rf $(VENV_DIR)
+	@echo "Eliminando recursos en Kubernetes..."
+	kubectl delete namespace $(NAMESPACE)
+	@echo "Recursos eliminados."
 
-create-network:
-	@echo "Creando red Docker para Kafka..."
-	docker network create $(NETWORK_NAME) || echo "La red $(NETWORK_NAME) ya existe."
-
-start-zookeeper:
-	@echo "Iniciando contenedor Zookeeper..."
-	docker run --name $(ZOOKEEPER_CONTAINER) --network $(NETWORK_NAME) -p 2181:2181 -d zookeeper || echo "Zookeeper ya está corriendo."
-
-start-kafka:
-	@echo "Iniciando contenedor Kafka..."
-	docker run -p 9092:9092 --name $(KAFKA_CONTAINER) --network $(NETWORK_NAME) \
-		-e KAFKA_ZOOKEEPER_CONNECT=$(ZOOKEEPER_CONTAINER):2181 \
-		-e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
-		-e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
-		-d $(KAFKA_IMAGE) || echo "Kafka ya está corriendo."
-
-stop-zookeeper:
-	@echo "Deteniendo contenedor Zookeeper..."
-	docker stop $(ZOOKEEPER_CONTAINER) || echo "Zookeeper no está corriendo."
-	docker rm $(ZOOKEEPER_CONTAINER) || echo "Zookeeper no existe."
-
-stop-kafka:
-	@echo "Deteniendo contenedor Kafka..."
-	docker stop $(KAFKA_CONTAINER) || echo "Kafka no está corriendo."
-	docker rm $(KAFKA_CONTAINER) || echo "Kafka no existe."
+# Abrir el Dashboard de Minikube
+dashboard:
+	@echo "Abriendo Dashboard de Minikube..."
+	minikube dashboard --profile=$(MINIKUBE_PROFILE)
