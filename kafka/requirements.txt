@@ -1,3 +1,6 @@
 confluent-kafka
 statsbombpy
 pandas
+dask[distributed]
+dask[dataframe]
+boto3

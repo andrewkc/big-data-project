@@ -47,7 +47,7 @@ for match_id in matches_id:
         producer.flush()  # Asegurar que el mensaje se envíe antes de continuar
         print(f"\nMensaje enviado para match_id={match_id}")
         print(result)
-        
+            
     except Exception as e:
         print(f"Error procesando match_id={match_id}: {e}")
     finally:
